@@ -1,0 +1,599 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        1200
+      ],
+      "id": "1480c8d5-d3ef-485e-85f0-6850d86d6dfb",
+      "name": "Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "TZtQePDMJ3j6PZ3M",
+          "name": "abhiram.bvb"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger').first().json.messages[0].from }}",
+        "sessionTTL": 500000
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        1040,
+        1200
+      ],
+      "id": "79105878-8e2a-4fcd-b4ab-4774d1728490",
+      "name": "Redis Chat History Memory",
+      "credentials": {
+        "redis": {
+          "id": "yvuTG5xG2g9XosHp",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Name: Book Calendar Appointment\nDescription: Books an appointment at a specific time.\n\nStart_Time: ISO 8601 datetime string (e.g., \"2025-01-15T10:00:00-05:30\")\n\nContact_ID: The HighLevel Contact ID. You MUST provide this ID. If the contact already existed, pull it from your initial instructions context. If you just created the contact, use the new ID returned from the creation tool.\n\n\nName: Book Calendar Appointment\nDescription: Books a vet appointment at a specific time.\n\nStart_Time: ISO 8601 datetime string (e.g., \"2025-03-10T11:00:00+05:30\")\n\nContact_ID: The HighLevel Contact ID. Pull it from the initial context if the \ncontact existed, or use the ID returned from the creation tool if newly created.",
+        "resource": "calendar",
+        "calendarId": "enter-your-calender-id-here",
+        "locationId": "enter-your-location-id-here",
+        "contactId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Contact_ID', ``, 'string') }}",
+        "startTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start_Time', ``, 'string') }}",
+        "additionalFields": {
+          "title": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Title', ``, 'string') }}",
+          "toNotify": true
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.highLevelTool",
+      "typeVersion": 2,
+      "position": [
+        1184,
+        1200
+      ],
+      "id": "63d24767-d328-44fe-b3f0-63ed4efab30e",
+      "name": "Book Calendar Appointment",
+      "credentials": {
+        "highLevelOAuth2Api": {
+          "id": "j07jOQoIY1vL4lAY",
+          "name": "HighLevel account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Name: Create or update a contact in HighLevel\nDescription: Creates a new contact in the system. Use this when the user's Contact ID is empty. Requires the user's 'Email' address, user address & User name",
+        "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Email', ``, 'string') }}",
+        "phone": "=+{{ $('WhatsApp Trigger').item.json.messages[0].from }}",
+        "additionalFields": {
+          "address1": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Address', ``, 'string') }}",
+          "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Name', ``, 'string') }}"
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.highLevelTool",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        1200
+      ],
+      "id": "8ff3cc9e-acd4-4bdb-bede-a75ce9e7f91c",
+      "name": "Create or update a contact in HighLevel",
+      "credentials": {
+        "highLevelOAuth2Api": {
+          "id": "j07jOQoIY1vL4lAY",
+          "name": "HighLevel account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1083481144853090",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').first().json.messages[0].from }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        2208,
+        976
+      ],
+      "id": "3767836e-22ba-4c23-9910-c07c1bd6a698",
+      "name": "Send WhatsApp Response",
+      "webhookId": "75103a52-ea18-4295-b163-7bc2b9ddba08",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "KsIEVWr4quKHUlO7",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "11bbaeec-d3f0-4e49-a323-10fb6e13a513",
+              "leftValue": "={{ $json.messages[0].from }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "7d2bba8b-8cc6-4aa7-962e-1cd7b3b1b22a",
+              "leftValue": "={{ $json.messages[0].type }}",
+              "rightValue": "unsupported",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        528,
+        992
+      ],
+      "id": "ace8174d-caea-4f74-b586-f85f12af0c91",
+      "name": "If Valid Sender Exists"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 1,
+        "filters": {
+          "query": "=+{{ $json.messages[0].from }}"
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.highLevel",
+      "typeVersion": 2,
+      "position": [
+        752,
+        976
+      ],
+      "id": "e250c718-e3e5-40ba-bb10-b2ee90035545",
+      "name": "Fetch GHL Contacts",
+      "alwaysOutputData": true,
+      "credentials": {
+        "highLevelOAuth2Api": {
+          "id": "j07jOQoIY1vL4lAY",
+          "name": "HighLevel account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        304,
+        992
+      ],
+      "id": "572e37bd-7c10-4d47-9c8e-a358e712404b",
+      "name": "WhatsApp Trigger",
+      "webhookId": "5bdae0b3-8ba4-4e13-b259-8922aa9ad77b",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "iXRwfmH8WHEurWCh",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Name: Save pet issue in notes\nDescription: Saves the owner's concern about their pet to their contact profile. \nRequires the 'Note' parameter containing a brief summary including the pet's name, \nspecies, and the described health concern or reason for the visit.",
+        "email": "={{$json.email }}",
+        "phone": "=+{{ $('WhatsApp Trigger').item.json.messages[0].from }}",
+        "additionalFields": {
+          "notes": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Note', `you should add the issue over here in this field`, 'string') }}"
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.highLevelTool",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        1200
+      ],
+      "id": "cec1988b-bcd7-4204-ae0f-7349c658b1cd",
+      "name": "Save pet issue in notes",
+      "rewireOutputLogTo": "ai_tool",
+      "credentials": {
+        "highLevelOAuth2Api": {
+          "id": "j07jOQoIY1vL4lAY",
+          "name": "HighLevel account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Name: Fetch Available Calendar Slots\nDescription: Retrieves available appointment slots for a specific date range.\n- Start_Date: Unix timestamp in milliseconds (e.g., 1735689600000 for Jan 1, 2025)\n- End_Date: Unix timestamp in milliseconds\nReturns: List of available 30-minute time slots with their start times\n\nAnd if we only got the traceid back then that means we don't have any open slots for that day/user specified time",
+        "url": "=https://services.leadconnectorhq.com/calendars/enter-your-calender-id-here/free-slots",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "highLevelOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "startDate",
+              "value": "={{ $fromAI('Start_Date', '', 'number') }}"
+            },
+            {
+              "name": "endDate",
+              "value": "={{ $fromAI('End_Date', '', 'number') }}"
+            },
+            {
+              "name": "timezone",
+              "value": "America/New_York"
+            }
+          ]
+        },
+        "options": {},
+        "optimizeResponse": true
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        1632,
+        1200
+      ],
+      "id": "a0eb8a69-df4b-4da1-8f64-4302e0fbe612",
+      "name": "Fetch Available Calendar Slots",
+      "credentials": {
+        "highLevelOAuth2Api": {
+          "id": "j07jOQoIY1vL4lAY",
+          "name": "HighLevel account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=<context>\n    <timestamp>\n        Current date and time: {{ $now.toFormat(\"DDDD, HH:mm:ss ZZZZ\") }}\n        Use this to correctly interpret relative time requests (e.g., \"tomorrow morning,\" \"this Friday,\" \"in two hours\").\n    </timestamp>\n\n    <scheduling_rules>\n        The clinic timezone is America/New_York (US Eastern).\n        The clinic operates Monday to Friday only. Weekends (Saturday and Sunday) are closed.\n        - If the user requests a weekend date, do NOT fetch slots. Inform them the clinic is closed and suggest the next available Monday.\n        - When suggesting dates proactively, only ever suggest weekdays (Mon–Fri).\n        - Use the current timestamp above to calculate which day of the week any requested date falls on.\n    </scheduling_rules>\n\n<user_details>\n    {{ $json.id ? \"Contact ID: \" + $json.id + \"\\nFirst Name: \" + $json.firstName + \"\\nLast Name: \" + $json.lastName + \"\\nEmail: \" + $json.email + \"\\nPhone Number: \" + $('WhatsApp Trigger').item.json.messages[0].from : \"Contact ID: EMPTY\\nPhone Number: \" + $('WhatsApp Trigger').item.json.messages[0].from + \"\\nMissing Info: Contact does not exist. You MUST ask the user for their Name and Email to create a contact profile.\" }}\n</user_details>\n</context>\n\n<persona>\n    <name>Luna</name>\n    <role>Friendly and caring pet clinic receptionist</role>\n    <company>Paws & Cliques Pet Clinic</company>\n    <tone>Warm, caring, and reassuring — especially when pets are unwell</tone>\n</persona>\n\n<instructions>\n    <task>\n        Handle pet health inquiries, collect owner and pet details, save their concerns, and book vet appointments efficiently via WhatsApp.\n    </task>\n\n    <workflow>\n        <step n=\"1\">\n            <name>Greet and Understand the Concern</name>\n            <action>\n                - Greet the pet owner warmly and ask about their pet's name, species, and the concern or reason for the visit\n                - Acknowledge their concern with empathy (especially if their pet is unwell)\n                - When they describe the issue, IMMEDIATELY use the \"Save pet issue in notes\" tool to document the pet name, species, and concern summary\n            </action>\n        </step>\n\n        <step n=\"2\">\n            <name>Check Contact Status</name>\n            <condition case=\"Contact ID is EMPTY\">\n                <priority>HIGH — Must create contact first</priority>\n                <action>\n                    Let the owner know you'll need a few quick details to set up their profile.\n\n                    Collect the following (phone number already available from WhatsApp, DO NOT ask for it):\n                    - Owner's full name\n                    - Email address\n\n                    Once collected, use the \"Create or update a contact in HighLevel\" tool with:\n                    - Name, Email, Phone\n\n                    After contact creation, proceed to booking.\n                </action>\n                <tool>Create or update a contact in HighLevel</tool>\n            </condition>\n\n            <condition case=\"Contact ID exists\">\n                <action>\n                    Address the owner by their first name warmly.\n                    Since their profile is already on file, skip information collection and move directly to scheduling.\n                    DO NOT ask for phone number — already captured from WhatsApp.\n                </action>\n            </condition>\n        </step>\n\n        <step n=\"3\">\n            <name>Fetch Available Appointment Slots</name>\n            <action>\n                Ask when they'd like to bring their pet in.\n\n                CRITICAL — ALWAYS fetch availability first using the \"Fetch Available Calendar Slots\" tool before suggesting any times.\n\nReference — today and the next 14 weekdays with correct America/New_York timestamps:\n{{ \n(function() {\n  const lines = [];\n  let date = $now.setZone('America/New_York').startOf('day');\n  let count = 0;\n  while (count < 14) {\n    const dow = date.weekday;\n    if (dow >= 1 && dow <= 5) {\n      const start = date.toMillis();\n      const end = date.endOf('day').toMillis();\n      lines.push(`- ${date.toFormat('MMMM d, yyyy')} (${date.toFormat('cccc')}) → Start: ${start} | End: ${end}`);\n      count++;\n    }\n    date = date.plus({ days: 1 });\n  }\n  return lines.join('\\n');\n})()\n}}\n\nCRITICAL: Always pick the Start and End values directly from this list based on the user's requested date. NEVER calculate timestamps yourself.\n\n                CRITICAL — Interpreting the tool response:\n                - If the response contains a list of time slots → present them to the user as bullet points\n                - If the response contains ONLY a traceId with no slots (e.g., {\"traceId\": \"...\"}) → this means NO slots are available for that date. Inform the user politely and ask them to pick a different date.\n\n                CRITICAL — Displaying slots:\n                - Slots are returned in America/New_York time (e.g., \"2026-06-29T09:00:00-04:00\")\n                - Strip the timezone offset and display only the time in 12-hour format with AM/PM\n                - Example: \"2026-06-29T09:00:00-04:00\" → display as \"9:00 AM\"\n                - Never show the raw ISO string or offset to the user\n\n                Example response when no slots available:\n                _Sorry, there are no available appointments on that day._ 📅\n\n                Could you suggest another date and I'll check availability for you?\n            </action>\n            <tool>Fetch Available Calendar Slots</tool>\n        </step>\n\n        <step n=\"4\">\n            <name>Book the Appointment</name>\n            <action>\n                Once the owner confirms a time, use the \"Book Calendar Appointment\" tool.\n\n                CRITICAL — Format Start_Time correctly:\n                - Use ISO 8601 format with America/New_York offset\n                - Use -04:00 between March and November (EDT)\n                - Use -05:00 between November and March (EST)\n                - Format: \"YYYY-MM-DDTHH:mm:ss-04:00\"\n                - Example: \"2025-03-10T11:00:00-04:00\" for 11:00 AM ET on March 10, 2025\n                - Always use the exact time the user selected from the returned slots — do not modify or convert it\n\n                After booking, confirm clearly:\n                - Pet's name\n                - Date and time (in 12-hour format, e.g., Monday, March 10 at 11:00 AM)\n                - Type of visit (checkup, vaccination, grooming, etc.)\n\n                Thank the owner and let them know a vet will be ready for them at the scheduled time.\n            </action>\n            <tool>Book Calendar Appointment</tool>\n        </step>\n    </workflow>\n\n    <general_guidelines>\n        - Always ask for the pet's name early — use it throughout the conversation\n        - Be extra gentle and reassuring when the pet seems unwell or the owner seems worried\n        - NEVER book without fetching available slots first\n        - If Contact ID is EMPTY, contact creation is your FIRST PRIORITY\n        - Never ask for the phone number — it's captured automatically from WhatsApp\n        - Use WhatsApp formatting for clarity and warmth\n        - Save the pet issue to notes as soon as the concern is described\n        - All scheduling, timestamps, and displayed times must use America/New_York timezone exclusively\n\n\n<appointment_management_rules>\n        - NEVER cancel or reschedule an appointment without explicitly confirming the action with the user first.\n        - If the user asks to cancel or reschedule, first fetch their upcoming appointments, show them the details, and ask: \"Are you sure you want to cancel this?\"\n        - Only execute the cancellation or reschedule tool AFTER receiving a definitive \"yes\" from the user.\n- CRITICAL: When using the Reschedule tool, you MUST format the new startTime in strict ISO 8601 format with the America/New_York offset (e.g., \"YYYY-MM-DDTHH:mm:ss-04:00\"), exactly the same way you do for booking new appointments. Do not modify or convert the time you get from the Fetch Available Calendar Slots tool.\n    </appointment_management_rules>\n\n    </general_guidelines>\n</instructions>\n\n<user_input>\n    <message>{{ $('WhatsApp Trigger').item.json.messages[0].text.body }}</message>\n</user_input>\n\n<output_format>\n    <style>WhatsApp</style>\n    <rules>\n        <rule>WhatsApp bold uses *asterisks* and italic uses _underscores_. This is correct — do NOT avoid them, they render properly for the user.</rule>\n        <rule>Use *bold* ONLY for critical info: pet names, confirmed dates, confirmed times. Maximum 2–3 bold items per message.</rule>\n        <rule>Use _italics_ sparingly, only for one reassuring phrase per message if needed.</rule>\n        <rule>Never bold entire sentences or greetings. Wrong: *Hi John, your appointment is booked!* Right: Your appointment is confirmed for *Monday, 10:00 AM* 🐾</rule>\n        <rule>Use bullet points (•) only when presenting 3 or more time slot options. Not for single answers.</rule>\n        <rule>Keep each message to 3–5 lines max. Break into short paragraphs, never one wall of text.</rule>\n        <rule>Use emojis sparingly — max 1–2 per message. Only 🐾 for pet references, 📅 for scheduling, ✅ for confirmations.</rule>\n        <rule>Never use markdown headers (##), dashes as bullets, or code blocks.</rule>\n        <rule>End every message with a single clear question or next step — never multiple questions at once.</rule>\n    </rules>\n    <example>\n        Good:\n        Got it! I've noted down *Max's* concern. 🐾\n\n        When would you like to bring him in?\n\n        Bad:\n        *Hello John!* I've *noted down* your concern about *Max* and I will *help you schedule* an *appointment* today! 📅🐾✅ Please let me know *when* you'd like to come in!\n    </example>\n</output_format>\n\n<constraints>\n    <fallback>\n        If asked about topics unrelated to pet care or appointment booking, politely redirect: \"I'm here to help schedule appointments at Paws & Cliques! For other inquiries, please call our front desk. Is there anything I can help you book for your furry friend today? 🐾\"\n    </fallback>\n</constraints>",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1424,
+        976
+      ],
+      "id": "573cd56f-b45b-44d7-b73c-657b19d46c3d",
+      "name": "Pet Clinic Appointment Scheduling Agent",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "toolDescription": "Use this tool to fetch the upcoming appointments of the user.",
+        "url": "=https://services.leadconnectorhq.com/contacts/{{ $('Fetch GHL Contacts').item.json.id }}/appointments",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "highLevelOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "calendarId",
+              "value": "enter-your-calender-id-here"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Version",
+              "value": "2021-07-28"
+            }
+          ]
+        },
+        "options": {},
+        "optimizeResponse": true
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        1776,
+        1200
+      ],
+      "id": "1e77ba0b-8ed9-4112-9269-453d2cc0aea4",
+      "name": "Fetch Upcoming Appointments of user",
+      "credentials": {
+        "highLevelOAuth2Api": {
+          "id": "j07jOQoIY1vL4lAY",
+          "name": "HighLevel account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Cancels an appointment in GoHighLevel. You must provide the eventId of the appointment. You should get this eventId by first using the \"Fetch Upcoming Appointments of user\" tool",
+        "method": "PUT",
+        "url": "=https://services.leadconnectorhq.com/calendars/events/{{ $fromAI('eventId') }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "highLevelOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "locationId",
+              "value": "enter-your-location-id-here"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Version",
+              "value": "2021-07-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "cancelled"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        1920,
+        1200
+      ],
+      "id": "698273e9-4a8d-478d-8d9f-7668afae1f81",
+      "name": "Cancel the Appointment",
+      "credentials": {
+        "highLevelOAuth2Api": {
+          "id": "j07jOQoIY1vL4lAY",
+          "name": "HighLevel account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Reschedules an existing appointment in GoHighLevel to a new time. You must provide the eventId of the appointment. You MUST provide the new start time in strict ISO 8601 format with the correct timezone offset (e.g., 2026-06-29T09:00:00-04:00). NEVER pass conversational dates like \"tomorrow\".",
+        "method": "PUT",
+        "url": "=https://services.leadconnectorhq.com/calendars/events/{{ $fromAI('eventId') }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "highLevelOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "locationId",
+              "value": "enter-your-location-id-here"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Version",
+              "value": "2021-07-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "startTime",
+              "value": "={{ $fromAI('startTime', 'The new start time in strict ISO 8601 format with America/New_York offset (e.g. 2026-06-29T14:30:00-04:00)', 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        2048,
+        1200
+      ],
+      "id": "1cbcf8ce-4022-4896-a330-da6e66afcf8e",
+      "name": "Reschedule the Appointment",
+      "credentials": {
+        "highLevelOAuth2Api": {
+          "id": "j07jOQoIY1vL4lAY",
+          "name": "HighLevel account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Pet Clinic Appointment Scheduling Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Chat History Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Pet Clinic Appointment Scheduling Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Book Calendar Appointment": {
+      "ai_tool": [
+        [
+          {
+            "node": "Pet Clinic Appointment Scheduling Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create or update a contact in HighLevel": {
+      "ai_tool": [
+        [
+          {
+            "node": "Pet Clinic Appointment Scheduling Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Valid Sender Exists": {
+      "main": [
+        [
+          {
+            "node": "Fetch GHL Contacts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch GHL Contacts": {
+      "main": [
+        [
+          {
+            "node": "Pet Clinic Appointment Scheduling Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "If Valid Sender Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save pet issue in notes": {
+      "ai_tool": [
+        [
+          {
+            "node": "Pet Clinic Appointment Scheduling Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Available Calendar Slots": {
+      "ai_tool": [
+        [
+          {
+            "node": "Pet Clinic Appointment Scheduling Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pet Clinic Appointment Scheduling Agent": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Upcoming Appointments of user": {
+      "ai_tool": [
+        [
+          {
+            "node": "Pet Clinic Appointment Scheduling Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cancel the Appointment": {
+      "ai_tool": [
+        [
+          {
+            "node": "Pet Clinic Appointment Scheduling Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reschedule the Appointment": {
+      "ai_tool": [
+        [
+          {
+            "node": "Pet Clinic Appointment Scheduling Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "93f396852104089b8670e7494b0f3668b420464668ae4a8c1d6b4b5799f8e3ef"
+  }
+}
